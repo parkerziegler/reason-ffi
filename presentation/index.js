@@ -13,7 +13,8 @@ import {
   Quote,
   Slide,
   Text,
-  Image
+  Image,
+  CodePane
 } from "spectacle";
 
 // Import theme
@@ -31,11 +32,18 @@ const theme = createTheme({
   reason: "#db4d3f",
   black: "#000",
   bucklescript: "#ab5ea3",
-  quarternary: "#a1a1a1"
+  bsblue: "#17c4ae",
+  bsbluebg: "#26d2bc",
+  quarternary: "#a1a1a1",
+  code: "#2a2734"
 }, {
   primary: "Montserrat",
   secondary: "Helvetica"
 });
+
+const bsModuleSource = `[@bs.module "urql"]
+external query : (~query: string, ~variables: 'vars=?, unit) => urqlQuery = "";
+`;
 
 export default class Presentation extends React.Component {
   render() {
@@ -53,32 +61,41 @@ export default class Presentation extends React.Component {
         <Slide transition={["fade"]} bgColor="black">
           <Image src={ReasonMeme} alt="Reason is hot." height="100%" />
         </Slide>
-        <Slide transition={["fade"]} bgColor="white" textColor="black">
+        <Slide transition={["fade"]} bgColor="bsbluebg" textColor="black">
           <Image src={BuckleScriptLogo} alt="BuckleScript" height={600} />
         </Slide>
-        <Slide transition={["fade"]} bgColor="reason" textColor="white">
+        <Slide transition={["fade"]} bgColor="bsbluebg" textColor="white">
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-around" }}>
+            <Heading size={1} fit caps lineHeight={1} textColor="black">
+              Common BuckleScript Helpers
+            </Heading>
             <List>
               <ListItem style={{ color: "black", margin: "10px" }}>
                 <Code>[@bs.module]</Code>
-                <Text margin="10px 0px 10px 50px" textColor="black" textSize={30}>
+                <Text margin="10px 0px 10px 60px" textColor="black" textSize={30}>
                   Binding to a JS module
                 </Text>
               </ListItem>
               <ListItem style={{ color: "black", margin: "10px" }}>
                 <Code>[@bs.send]</Code>
-                <Text margin="10px 0px 10px 50px" textColor="black" textSize={30}>
-                  Binding to JS external (typically an object)
+                <Text margin="10px 0px 10px 60px" textColor="black" textSize={30}>
+                  Attaching a method to external JS object
                 </Text>
               </ListItem>
               <ListItem style={{ color: "black", margin: "10px" }}>
                 <Code>[@bs.deriving abstract]</Code>
-                <Text margin="10px 0px 10px 50px" textColor="black" textSize={30}>
+                <Text margin="10px 0px 10px 60px" textColor="black" textSize={30}>
                   Creating a JS object of fixed shape
                 </Text>
               </ListItem>
             </List>
           </div>
+        </Slide>
+        <Slide transition={["fade"]} bgColor="code">
+          <Heading size={1} caps lineHeight={1} textColor="white" textSize={22} textAlign="left">
+            Let's Bind the Query API from URQL
+          </Heading>
+          <CodePane lang="reason" source={bsModuleSource} textSize={18} />
         </Slide>
       </Deck>
     );
