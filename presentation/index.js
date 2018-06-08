@@ -64,6 +64,22 @@ export default class Presentation extends React.Component {
         <Slide transition={["fade"]} bgColor="bsbluebg" textColor="black">
           <Image src={BuckleScriptLogo} alt="BuckleScript" height={600} />
         </Slide>
+        <Slide transition={["fade"]} bgColor="bsbluebg" textColor="black">
+          <Heading size={1} caps lineHeight={1} textColor="black" textSize={72} textAlign="left">
+            BuckleScript
+          </Heading>
+          <List>
+            <ListItem style={{ color: "black", margin: "10px" }}>
+              Compiles OCaml or Reason to JS
+            </ListItem>
+            <ListItem style={{ color: "black", margin: "10px" }}>
+              Provides [@bs] annotations for interop
+            </ListItem>
+            <ListItem style={{ color: "black", margin: "10px" }}>
+              Generates <i>human readable</i> output
+            </ListItem>
+          </List>
+        </Slide>
         <Slide transition={["fade"]} bgColor="bsbluebg" textColor="white">
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-around" }}>
             <Heading size={1} fit caps lineHeight={1} textColor="black">
