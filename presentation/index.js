@@ -13,7 +13,8 @@ import {
   Image,
   CodePane,
   Fill,
-  Layout
+  Layout,
+  Markdown
 } from "spectacle";
 
 // Import theme
@@ -21,28 +22,50 @@ import createTheme from "spectacle/lib/themes/default";
 import ReasonLogo from "../assets/reason-logo.png";
 import ReasonMeme from "../assets/reason-meme.jpg";
 import BuckleScriptLogo from "../assets/bucklescript.png";
+import ReasonPitch from "../assets/reason-pitch.png";
 
 // Require CSS
 require("normalize.css");
 
-
-const theme = createTheme({
-  white: "#fff",
-  reason: "#db4d3f",
-  black: "#000",
-  bucklescript: "#ab5ea3",
-  bsblue: "#17c4ae",
-  bsbluebg: "#26d2bc",
-  quarternary: "#A8A6A1",
-  code: "#2a2734"
-}, {
-  primary: "Space Mono",
-  secondary: "Montserrat"
-});
+const theme = createTheme(
+  {
+    white: "#fff",
+    reason: "#db4d3f",
+    black: "#000",
+    bucklescript: "#ab5ea3",
+    bsblue: "#17c4ae",
+    bsbluebg: "#26d2bc",
+    quarternary: "#A8A6A1",
+    code: "#2a2734"
+  },
+  {
+    primary: "Space Mono",
+    secondary: "Montserrat"
+  }
+);
 
 const bsModuleSource = `[@bs.module "urql"]
 external query : (~query: string, ~variables: 'vars=?, unit) => urqlQuery = "";
 `;
+
+const urqlQuerySource = `
+/* Query is a Reason module */
+let getDogs: Query.urqlQuery =
+  Query.query(
+    ~query={|
+        query {
+          dogs {
+            name
+            key
+            breed
+            description
+            imageUrl
+            likes
+          }
+        }
+      |},
+    (),
+  );`;
 
 const bsDerivingAbstractSource = `type variables;
 
@@ -70,6 +93,34 @@ external executeQuery :
   "";
 `;
 
+const executeQuerySource = `let config: Client.urqlClientConfig =
+Client.urqlClientConfig(~url="http://localhost:3001", ());
+
+/* Instantiate the client instance. */
+let client = Client.client(config);
+
+/* Execute a query! */
+let promise = Client.executeQuery(client, query, false);
+
+promise
+|> Js.Promise.then_(value => {
+   let dogs = value##data##dogs;
+   Js.log(dogs);
+   Js.Promise.resolve(dogs);
+ });
+`;
+
+const apimd = `
+API | Needs
+--- | ---
+query | None
+mutation | None
+Client | cache, initalCache
+Provider | None
+Connect | better mutations
+ConnectHoC | 😬
+`;
+
 export default class Presentation extends React.Component {
   render() {
     return (
@@ -83,8 +134,16 @@ export default class Presentation extends React.Component {
             Writing Reason Bindings for JS Libraries
           </Text>
         </Slide>
+        <Slide transition={["fade"]} bgColor="white">
+          <Image src={ReasonPitch} alt="Reason pitch." />
+        </Slide>
         <Slide transition={["fade"]} bgColor="black">
           <Image src={ReasonMeme} alt="Reason is hot." height="100%" />
+        </Slide>
+        <Slide transition={["fade"]} bgColor="reason">
+          <Heading textColor="white" size={1} fit bold>
+            Yes, Reason is 🔥. But Reason doesn't compile itself to JS!
+          </Heading>
         </Slide>
         <Slide transition={["fade"]} bgColor="bsbluebg" textColor="black">
           <Image src={BuckleScriptLogo} alt="BuckleScript" height={600} />
@@ -133,66 +192,192 @@ export default class Presentation extends React.Component {
           </div>
         </Slide>
         <Slide transition={["fade"]} bgColor="code">
-          <Heading size={1} lineHeight={1} textColor="white" textSize={22} textAlign="left" style={{ margin: "10px" }}>
+          <Heading
+            size={1}
+            lineHeight={1}
+            textColor="white"
+            textSize={22}
+            textAlign="left"
+            style={{ margin: "10px" }}
+          >
             Let's Bind the Query API from Urql
           </Heading>
           <CodePane lang="reason" source={bsModuleSource} textSize={18} />
         </Slide>
         <Slide transition={["fade"]} bgColor="reason">
-          <Heading size={1} lineHeight={1} fit textColor="white" style={{ textDecoration: "underline" }}>
+          <Heading
+            size={1}
+            lineHeight={1}
+            fit
+            textColor="white"
+            style={{ textDecoration: "underline" }}
+          >
             What the heck is all of this syntax?
           </Heading>
           <Layout style={{ flexDirection: "column", textAlign: "left", margin: "20px" }}>
             <Fill style={{ margin: "15px" }} textColor="white" textSize={30}>
-              <Code textColor="white" textSize={30}>[@bs.module "urql"]</Code>
+              <Code textColor="white" textSize={30}>
+                [@bs.module "urql"]
+              </Code>
               <Text textColor="white" textSize={30}>
-                We have an <Code textColor="white" textSize={30}>external</Code> JS module called <Code textColor="white" textSize={30}>urql</Code></Text>
-            </Fill>
-            <Fill style={{ margin: "15px" }}>
-              <Code textColor="white" textSize={30}>external query</Code>
-              <Text textColor="white" textSize={30}>
-                In the <Code textColor="white" textSize={30}>urql</Code> module, there's something called <Code textColor="white" textSize={30}>query</Code>
+                We have an{" "}
+                <Code textColor="white" textSize={30}>
+                  external
+                </Code>{" "}
+                JS module called{" "}
+                <Code textColor="white" textSize={30}>
+                  urql
+                </Code>
               </Text>
             </Fill>
             <Fill style={{ margin: "15px" }}>
-              <Code textColor="white" textSize={30}>: (~query: string, ~variables: 'vars=?, unit)</Code>
+              <Code textColor="white" textSize={30}>
+                external query
+              </Code>
               <Text textColor="white" textSize={30}>
-                <Code textColor="white" textSize={30}>query</Code> is a function that takes a required, labeled argument <Code textColor="white" textSize={30}>query</Code> and an optional labeled argument <Code textColor="white" textSize={30}>variables</Code>
+                In the{" "}
+                <Code textColor="white" textSize={30}>
+                  urql
+                </Code>{" "}
+                module, there's something called{" "}
+                <Code textColor="white" textSize={30}>
+                  query
+                </Code>
               </Text>
             </Fill>
             <Fill style={{ margin: "15px" }}>
-              <Code textColor="white" textSize={30}>= urqlQuery = ""</Code>
+              <Code textColor="white" textSize={30}>
+                : (~query: string, ~variables: 'vars=?, unit)
+              </Code>
               <Text textColor="white" textSize={30}>
-                The function returns something of type <Code textColor="white" textSize={30}>urqlQuery</Code>
+                <Code textColor="white" textSize={30}>
+                  query
+                </Code>{" "}
+                is a function that takes a required, labeled argument{" "}
+                <Code textColor="white" textSize={30}>
+                  query
+                </Code>{" "}
+                and an optional labeled argument{" "}
+                <Code textColor="white" textSize={30}>
+                  variables
+                </Code>
+              </Text>
+            </Fill>
+            <Fill style={{ margin: "15px" }}>
+              <Code textColor="white" textSize={30}>
+                = urqlQuery = ""
+              </Code>
+              <Text textColor="white" textSize={30}>
+                The function returns something of type{" "}
+                <Code textColor="white" textSize={30}>
+                  urqlQuery
+                </Code>
               </Text>
             </Fill>
           </Layout>
         </Slide>
         <Slide transition={["fade"]} bgColor="reason">
-          <Heading size={1} lineHeight={1} fit textColor="white">So now we can use <Code textColor="white" textSize={20}>query</Code> in our Reason code!</Heading>
-        </Slide>
-        <Slide transition={["fade"]} bgColor="reason">
-          <Heading size={1} lineHeight={1} fit textColor="white">But wait, Parkie-Doo, what was that <Code textColor="white" textSize={20}>urqlQuery</Code> being returned?</Heading>
+          <Heading size={1} lineHeight={1} fit textColor="white">
+            So now we can use{" "}
+            <Code textColor="white" textSize={20}>
+              query
+            </Code>{" "}
+            in our Reason code!
+          </Heading>
         </Slide>
         <Slide transition={["fade"]} bgColor="code">
-          <Heading size={1} lineHeight={1} textColor="white" textSize={22} textAlign="left" style={{ maring: "10px" }}>
+          <Heading
+            size={1}
+            lineHeight={1}
+            textColor="white"
+            textSize={22}
+            textAlign="left"
+            style={{ margin: "10px" }}
+          >
+            Let's make an Urql query!
+          </Heading>
+          <CodePane lang="reason" source={urqlQuerySource} textSize={18} />
+        </Slide>
+        <Slide transition={["fade"]} bgColor="reason">
+          <Heading size={1} lineHeight={1} fit textColor="white">
+            But wait, Parkie-Doo, what was that{" "}
+            <Code textColor="white" textSize={20}>
+              urqlQuery
+            </Code>{" "}
+            being returned?
+          </Heading>
+        </Slide>
+        <Slide transition={["fade"]} bgColor="code">
+          <Heading
+            size={1}
+            lineHeight={1}
+            textColor="white"
+            textSize={22}
+            textAlign="left"
+            style={{ maring: "10px" }}
+          >
             urqlQuery is a JS object containing keys for query and variables
           </Heading>
           <CodePane lang="reason" source={bsDerivingAbstractSource} textSize={18} />
         </Slide>
         <Slide transition={["fade"]} bgColor="reason">
-          <Heading size={1} lineHeight={1} fit textColor="white">So now that we can write a query, how could we actually execute one?</Heading>
+          <Heading size={1} lineHeight={1} fit textColor="white">
+            So now that we can write a query, how could we actually execute one?
+          </Heading>
         </Slide>
         <Slide transition={["fade"]} bgColor="code">
-          <Heading size={1} lineHeight={1} textColor="white" textSize={22} textAlign="left" style={{ margin: "10px" }}>
+          <Heading
+            size={1}
+            lineHeight={1}
+            textColor="white"
+            textSize={22}
+            textAlign="left"
+            style={{ margin: "10px" }}
+          >
             Let's bind the Client API from Urql
           </Heading>
           <CodePane lang="reason" source={urqlClientSource} textSize={18} />
         </Slide>
+        <Slide transition={["fade"]} bgColor="code">
+          <Heading
+            size={1}
+            lineHeight={1}
+            textColor="white"
+            textSize={22}
+            textAlign="left"
+            style={{ margin: "10px" }}
+          >
+            Now we can call client.executeQuery from Reason!
+          </Heading>
+          <CodePane lang="reason" source={executeQuerySource} textSize={18} />
+        </Slide>
         <Slide transition={["fade"]} bgColor="reason">
-          <Heading size={1} lineHeight={1} textColor="white" textSize={80} style={{ margin: "15px" }}>Introducing</Heading>
-          <Code textColor="white" textSize={60} style={{ margin: "15px" }}>urql-reason</Code>
-          <i><Text textColor="white" textSize={30} style={{ margin: "15px" }}>Urql Bindings for ReasonML</Text></i>
+          <Heading
+            size={1}
+            lineHeight={1}
+            textColor="white"
+            textSize={80}
+            style={{ margin: "15px" }}
+          >
+            Introducing
+          </Heading>
+          <Code textColor="white" textSize={60} style={{ margin: "15px" }}>
+            urql-reason
+          </Code>
+          <i>
+            <Text textColor="white" textSize={30} style={{ margin: "15px" }}>
+              Urql Bindings for ReasonML
+            </Text>
+          </i>
+        </Slide>
+        <Slide transition={["fade"]} bgColor="reason" textAlign="left" textColor="white">
+          <Heading size={1} lineHeight={1} fit textColor="white">
+            <Code textColor="white" textSize={20}>
+              urql-reason
+            </Code>{" "}
+            API Coverage
+          </Heading>
+          <Markdown source={apimd} style={{ margin: "15px" }} />
         </Slide>
       </Deck>
     );
